@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    compliance_pipeline:
+      name: "Compliance Pipeline [${bundle.target}]"
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      # Pass catalog/schema into the pipeline source file via Spark conf.
+      # pipelines/compliance_pipeline.py reads these at runtime.
+      configuration:
+        bdd.catalog: ${var.catalog}
+        bdd.schema: ${var.schema}
+      libraries:
+        - file:
+            path: ./pipelines/compliance_pipeline.py
+      channel: CURRENT

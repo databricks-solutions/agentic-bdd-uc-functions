@@ -1,0 +1,33 @@
+bundle:
+  name: compliance-bdd
+
+variables:
+  catalog:
+    default: main
+  schema:
+    default: compliance
+  warehouse_id:
+    description: "Serverless SQL warehouse ID used by the Statement Execution API"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    variables:
+      catalog: dev
+      # Each developer gets their own schema automatically — no coordination needed.
+      schema: compliance_${workspace.current_user.short_name}
+
+  staging:
+    variables:
+      catalog: staging
+      schema: compliance_staging
+
+  prod:
+    mode: production
+    variables:
+      catalog: main
+      schema: compliance
+
+include:
+  - resources/*.yml

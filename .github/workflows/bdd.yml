@@ -1,0 +1,92 @@
+name: BDD tests
+
+# The BDD suite runs on the GitHub Actions runner (not inside Databricks).
+# It calls the Databricks Statement Execution API over HTTP — no Spark, no cluster.
+#
+# Sequence on push to main:
+#   1. bundle deploy  — deploys UC function + pipeline definition to staging
+#   2. behave         — validates the deployed UC function (gate)
+#   3. bundle run     — runs the pipeline only if BDD is green
+#
+# On pull_request: deploy + test only (no pipeline run).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+  DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
+  # Point at the staging target. PR tests and main branch tests both use staging.
+  BDD_CATALOG: staging
+  BDD_SCHEMA: compliance_staging
+
+jobs:
+  deploy:
+    name: Deploy bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate bundle
+        run: databricks bundle validate --target staging
+
+      - name: Deploy bundle
+        run: databricks bundle deploy --target staging
+
+      - name: Deploy UC functions
+        # UC functions are not a native bundle resource type — deploy via script.
+        uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python -m scripts.deploy_function
+
+  bdd:
+    name: BDD tests
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Warm up warehouse
+        # Absorbs cold-start latency so the first BDD scenario isn't slow.
+        run: |
+          uv run python - <<'EOF'
+          import os
+          from databricks.sdk import WorkspaceClient
+          from databricks.sdk.service.sql import StatementState
+          c = WorkspaceClient()
+          r = c.statement_execution.execute_statement(
+              warehouse_id=os.environ["DATABRICKS_WAREHOUSE_ID"],
+              statement="SELECT 1",
+              wait_timeout="60s",
+          )
+          assert r.status.state == StatementState.SUCCEEDED
+          EOF
+
+      - name: Run BDD suite
+        run: uv run behave
+
+  run-pipeline:
+    name: Run pipeline
+    runs-on: ubuntu-latest
+    needs: bdd
+    # Only promote to pipeline run on pushes to main, not on PRs.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Run compliance pipeline
+        run: databricks bundle run compliance_pipeline --target staging
