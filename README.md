@@ -1,8 +1,10 @@
-# databricks-bdd
+# agentic-bdd-uc-functions
 
 End-to-end example of BDD testing for Databricks Unity Catalog functions, using [Behave](https://behave.readthedocs.io/) and the [Statement Execution API](https://docs.databricks.com/api/workspace/statementexecution).
 
 Tests run on a standard CI runner (GitHub Actions) — no Spark session, no local cluster, no Java. Each scenario is one HTTP call to a real UC function.
+
+> **Status:** community-contributed reference implementation. Not officially supported by Databricks. Issues and PRs are welcome but response times are best-effort. Use at your own risk; review the code against your own security and compliance requirements before using in production.
 
 ## How it works
 
