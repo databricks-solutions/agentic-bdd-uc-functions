@@ -6,3 +6,6 @@ dist/
 .venv/
 .ruff_cache/
 .databricks/
+*conf*.json
+.DS_Store
+.idea/

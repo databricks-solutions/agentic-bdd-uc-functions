@@ -7,7 +7,7 @@ Thanks for considering a contribution. This repo is a reference implementation f
 - **Keep examples runnable end-to-end.** A new example feature file or rule should come with the SQL function, the step definitions, and the fixture translator — not just a feature file.
 - **Don't add real customer data.** All examples should use synthetic data generated at runtime. The fixtures pattern in `src/compliance_bdd/fixtures.py` is the model.
 - **Match the existing terseness.** Step definitions stay thin. Comments only when the *why* is non-obvious.
-- **No proprietary code.** This repo is Apache 2.0. Anything contributed is licensed under those terms.
+- **No proprietary code.** This repo is licensed under the [Databricks DB License](LICENSE.md). Anything contributed is licensed under those terms.
 
 ## Development workflow
 
