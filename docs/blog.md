@@ -1,3 +1,9 @@
+---
+layout: default
+title: "The test suite nobody had to write: agentic BDD for data pipelines"
+permalink: /blog/
+---
+
 # The test suite nobody had to write: agentic BDD for data pipelines
 
 ---
