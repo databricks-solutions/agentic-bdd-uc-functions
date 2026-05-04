@@ -6,6 +6,8 @@ Tests run on a standard CI runner (GitHub Actions) — no Spark session, no loca
 
 > **Status:** community-contributed reference implementation. Not officially supported by Databricks. Issues and PRs are welcome but response times are best-effort. Use at your own risk; review the code against your own security and compliance requirements before using in production.
 
+📖 **[Read the deep dive blog post →](docs/blog.md)** — the why behind this pattern, where it fits, and where it doesn't.
+
 ## How it works
 
 A Unity Catalog SQL function is the single source of truth for the business rule. Both callers reference it without duplication:
